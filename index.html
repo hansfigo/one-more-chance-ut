@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0d10">
+<title>One More?</title>
+<style>
+  :root{
+    --bg:#0b0d10;
+    --panel:#12151a;
+    --line:#282d36;
+    --text:#f5f7fa;
+    --muted:#8d95a3;
+    --soft:#191d24;
+    --accent:#f5f7fa;
+    --accentText:#0b0d10;
+    --success:#93d7a4;
+    --danger:#ef9a9a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+  body{
+    min-height:100vh;
+    display:grid;
+    place-items:center;
+    padding:24px;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  main{width:min(520px,100%)}
+  .eyebrow{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:28px;
+  }
+  .hero{text-align:center;padding:8px 8px 26px}
+  .pot{
+    font-size:clamp(72px,19vw,112px);
+    line-height:.9;
+    letter-spacing:-.055em;
+    font-weight:780;
+    font-variant-numeric:tabular-nums;
+  }
+  .secured{margin-top:12px;color:var(--muted);font-size:15px}
+  .chanceRow{
+    margin:30px auto 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    min-height:44px;
+    font-size:20px;
+    font-weight:650;
+    font-variant-numeric:tabular-nums;
+  }
+  .chanceBadge{
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:999px;
+    padding:8px 12px;
+    min-width:72px;
+    text-align:center;
+  }
+  .arrow{color:var(--muted)}
+  .target{font-size:26px;letter-spacing:-.02em}
+  .actions{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;margin-top:24px}
+  button{
+    min-height:56px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    font:inherit;
+    font-size:16px;
+    font-weight:720;
+    cursor:pointer;
+    padding:14px 16px;
+    transition:transform .12s ease,opacity .12s ease,background .12s ease;
+  }
+  button:active{transform:scale(.985)}
+  button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+  .keep{background:var(--soft);color:var(--text)}
+  .risk{background:var(--accent);color:var(--accentText);border-color:var(--accent)}
+  .result{
+    min-height:64px;
+    margin-top:24px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .result strong{font-size:20px;line-height:1.2}
+  .result span{margin-top:6px;font-size:14px;color:var(--muted)}
+  .resolve{display:none;width:100%;margin-top:30px}
+  .resolveLabel{text-align:center;color:var(--muted);font-size:14px;margin-bottom:12px}
+  .track{height:6px;border-radius:999px;overflow:hidden;background:var(--soft)}
+  .bar{height:100%;width:0;background:var(--accent);border-radius:999px}
+  .again{display:none;width:100%;margin-top:12px;background:var(--accent);color:var(--accentText);border-color:var(--accent)}
+  .pulse{animation:pulse .42s ease-out}
+  .winFlash{animation:winFlash .5s ease-out}
+  @keyframes pulse{0%{transform:scale(1)}45%{transform:scale(1.08)}100%{transform:scale(1)}}
+  @keyframes winFlash{0%{color:var(--text)}35%{color:var(--success)}100%{color:var(--text)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  .research{display:none;margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
+  .research.show{display:block}
+  .research summary{cursor:pointer;color:var(--muted);font-size:13px}
+  .controls{display:grid;gap:14px;margin-top:16px}
+  .controls label{font-size:12px;color:var(--muted)}
+  .controls input[type=range]{width:100%;margin-top:6px}
+  .controlRow{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+  .controlRow button{min-height:42px;padding:8px 12px;background:var(--soft);color:var(--text);font-size:14px}
+  @media(max-width:460px){
+    body{padding:18px}
+    .actions{grid-template-columns:1fr}
+    .risk{order:-1}
+    .eyebrow{margin-bottom:22px}
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">One more?</div>
+
+  <section class="hero">
+    <div id="pot" class="pot">100</div>
+    <div class="secured">secured if you stop now</div>
+
+    <div class="chanceRow" aria-label="Current chance and possible reward">
+      <div id="chance" class="chanceBadge">80%</div>
+      <div class="arrow">→</div>
+      <div id="target" class="target">200</div>
+    </div>
+  </section>
+
+  <section id="decision">
+    <div class="actions">
+      <button id="keep" class="keep" type="button">Keep 100</button>
+      <button id="risk" class="risk" type="button">Risk for 200</button>
+    </div>
+  </section>
+
+  <section id="resolve" class="resolve" aria-live="polite">
+    <div class="resolveLabel">Committed</div>
+    <div class="track"><div id="bar" class="bar"></div></div>
+  </section>
+
+  <section id="result" class="result" aria-live="polite"></section>
+  <button id="again" class="again" type="button">Again</button>
+
+  <details id="research" class="research">
+    <summary>Research controls</summary>
+    <div class="controls">
+      <label>Starting chance: <b id="startLabel">80%</b>
+        <input id="start" type="range" min="20" max="100" step="5" value="80">
+      </label>
+      <label>Chance decrease after success: <b id="decayLabel">15%</b>
+        <input id="decay" type="range" min="0" max="30" step="5" value="15">
+      </label>
+      <label>Reward multiplier: <b id="multiLabel">2×</b>
+        <input id="multi" type="range" min="1.25" max="3" step="0.25" value="2">
+      </label>
+      <label>Reveal delay: <b id="delayLabel">1.25s</b>
+        <input id="delay" type="range" min="0" max="2500" step="250" value="1250">
+      </label>
+      <div class="controlRow">
+        <label><input id="showOdds" type="checkbox" checked> Show exact odds</label>
+        <button id="apply" type="button">Apply & restart</button>
+      </div>
+    </div>
+  </details>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const ui = {
+    pot:$('pot'), chance:$('chance'), target:$('target'), decision:$('decision'), keep:$('keep'), risk:$('risk'),
+    resolve:$('resolve'), bar:$('bar'), result:$('result'), again:$('again'), research:$('research'),
+    start:$('start'), decay:$('decay'), multi:$('multi'), delay:$('delay'), showOdds:$('showOdds'), apply:$('apply'),
+    startLabel:$('startLabel'), decayLabel:$('decayLabel'), multiLabel:$('multiLabel'), delayLabel:$('delayLabel')
+  };
+
+  let state = {};
+  let timer = null;
+
+  const params = new URLSearchParams(location.search);
+  if (params.get('research') === '1') ui.research.classList.add('show');
+
+  function config(){
+    return {
+      start:+ui.start.value,
+      decay:+ui.decay.value,
+      multi:+ui.multi.value,
+      delay:+ui.delay.value,
+      showOdds:ui.showOdds.checked
+    };
+  }
+  function fmt(n){ return Math.round(n).toLocaleString(); }
+  function nextReward(){ return Math.round(state.pot * config().multi); }
+
+  function setLabels(){
+    ui.startLabel.textContent = ui.start.value + '%';
+    ui.decayLabel.textContent = ui.decay.value + '%';
+    ui.multiLabel.textContent = (+ui.multi.value).toFixed(2).replace(/\.00$/,'').replace(/0$/,'') + '×';
+    ui.delayLabel.textContent = ((+ui.delay.value)/1000).toFixed(2).replace(/0+$/,'').replace(/\.$/,'') + 's';
+  }
+
+  function render(){
+    const c = config();
+    const reward = nextReward();
+    ui.pot.textContent = fmt(state.pot);
+    ui.chance.textContent = c.showOdds ? state.chance + '%' : '?';
+    ui.target.textContent = fmt(reward);
+    ui.keep.textContent = 'Keep ' + fmt(state.pot);
+    ui.risk.textContent = 'Risk for ' + fmt(reward);
+  }
+
+  function reset(){
+    if(timer) clearTimeout(timer);
+    const c = config();
+    state = {pot:100,chance:c.start,round:1,resolving:false,ended:false};
+    ui.decision.style.display='block';
+    ui.resolve.style.display='none';
+    ui.again.style.display='none';
+    ui.result.innerHTML='';
+    ui.bar.style.width='0';
+    render();
+  }
+
+  function finish(title, subtitle, tone){
+    state.ended=true;
+    state.resolving=false;
+    ui.decision.style.display='none';
+    ui.resolve.style.display='none';
+    ui.again.style.display='block';
+    ui.result.innerHTML=`<strong>${title}</strong><span>${subtitle}</span>`;
+    ui.result.querySelector('strong').style.color = tone === 'lose' ? 'var(--danger)' : 'var(--text)';
+  }
+
+  function resolveChance(){
+    const c = config();
+    const won = Math.random()*100 < state.chance;
+    state.resolving=false;
+    ui.resolve.style.display='none';
+    ui.bar.style.width='0';
+
+    if(won){
+      const old = state.pot;
+      state.pot = nextReward();
+      state.chance = Math.max(5, state.chance-c.decay);
+      state.round++;
+      render();
+      ui.pot.classList.remove('pulse','winFlash');
+      void ui.pot.offsetWidth;
+      ui.pot.classList.add('pulse','winFlash');
+      ui.result.innerHTML=`<strong>Worked. +${fmt(state.pot-old)}</strong><span>One more?</span>`;
+      ui.decision.style.display='block';
+      if(navigator.vibrate) navigator.vibrate(18);
+    } else {
+      state.pot=0;
+      render();
+      finish('Lost it.', 'You leave with 0.', 'lose');
+      if(navigator.vibrate) navigator.vibrate([35,30,35]);
+    }
+  }
+
+  ui.risk.addEventListener('click', () => {
+    if(state.ended || state.resolving) return;
+    const c = config();
+    state.resolving=true;
+    ui.decision.style.display='none';
+    ui.result.innerHTML='';
+    ui.resolve.style.display='block';
+    ui.bar.style.transition=`width ${c.delay}ms linear`;
+    ui.bar.style.width='0';
+    requestAnimationFrame(() => requestAnimationFrame(() => ui.bar.style.width='100%'));
+    timer=setTimeout(resolveChance,c.delay);
+  });
+
+  ui.keep.addEventListener('click', () => {
+    if(state.ended || state.resolving) return;
+    finish('Kept ' + fmt(state.pot) + '.', 'Safe.', 'safe');
+  });
+
+  ui.again.addEventListener('click', reset);
+  ui.apply.addEventListener('click', reset);
+  [ui.start,ui.decay,ui.multi,ui.delay].forEach(x => x.addEventListener('input', setLabels));
+  ui.showOdds.addEventListener('change', render);
+
+  setLabels();
+  reset();
+})();
+</script>
+</body>
+</html>
